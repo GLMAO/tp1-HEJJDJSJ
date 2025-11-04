@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.emp.gl.time.service.impl;
 
 import java.time.LocalTime;
@@ -15,33 +10,34 @@ import org.emp.gl.timer.service.TimerChangeListener;
 import org.emp.gl.timer.service.TimerService;
 
 /**
- *
- * @author tina
+ * Implémentation du service de temps factice (Dummy)
  */
-public class DummyTimeServiceImpl
-        implements TimerService {
+public class DummyTimeServiceImpl implements TimerService {
 
     int dixiemeDeSeconde;
     int minutes;
     int secondes;
     int heures;
-    List<TimerChangeListener> listeners = new LinkedList<>();
+
+    // Liste des abonnés (listeners)
+    private final List<TimerChangeListener> listeners = new LinkedList<>();
 
     /**
-     * Constructeur du DummyTimeServiceImpl: ici, 
-     * nous nous avons utilisé un objet Timer, qui permet de
-     * réaliser des tics à chaque N millisecondes
+     * Constructeur : initialise un Timer qui génère un "tic" toutes les 100 ms
      */
     public DummyTimeServiceImpl() {
         setTimeValues();
-        // initialize schedular
+
+        // initialise le Timer Java
         Timer timer = new Timer();
         TimerTask task = new TimerTask() {
-             @Override
+            @Override
             public void run() {
                 timeChanged();
             }
         };
+
+        // le Timer s’exécute toutes les 100 ms
         timer.scheduleAtFixedRate(task, 100, 100);
     }
 
@@ -54,21 +50,18 @@ public class DummyTimeServiceImpl
         setDixiemeDeSeconde(localTime.getNano() / 100000000);
     }
 
-   
-
-
+    // === Gestion des abonnés ===
     @Override
     public void addTimeChangeListener(TimerChangeListener pl) {
-        // TODO
-        listeners.add(pl) ;
+        listeners.add(pl);
     }
 
     @Override
     public void removeTimeChangeListener(TimerChangeListener pl) {
-        // TODO
-        listeners.remove(pl) ;
+        listeners.remove(pl);
     }
 
+    // === Changement de temps ===
     private void timeChanged() {
         setTimeValues();
     }
@@ -79,18 +72,8 @@ public class DummyTimeServiceImpl
 
         int oldValue = dixiemeDeSeconde;
         dixiemeDeSeconde = newDixiemeDeSeconde;
-
-        // informer les listeners !
-        dixiemeDeSecondesChanged(oldValue, dixiemeDeSeconde);
+        notifyListeners(TimerChangeListener.DIXEME_DE_SECONDE_PROP, oldValue, dixiemeDeSeconde);
     }
-
-    private void dixiemeDeSecondesChanged(int oldValue, int newValue) {
-       for (TimerChangeListener l : listeners) {
-           l.propertyChange(TimerChangeListener.DIXEME_DE_SECONDE_PROP,
-                   oldValue, dixiemeDeSeconde);
-       }
-    }
-
 
     public void setSecondes(int newSecondes) {
         if (secondes == newSecondes)
@@ -98,18 +81,8 @@ public class DummyTimeServiceImpl
 
         int oldValue = secondes;
         secondes = newSecondes;
-
-        secondesChanged(oldValue, secondes);
+        notifyListeners(TimerChangeListener.SECONDE_PROP, oldValue, secondes);
     }
-
-    private void secondesChanged(int oldValue, int secondes) {
-
-       for (TimerChangeListener l : listeners) {
-           l.propertyChange(TimerChangeListener.SECONDE_PROP,
-                   oldValue, secondes);
-       }
-    }
-
 
     public void setMinutes(int newMinutes) {
         if (minutes == newMinutes)
@@ -117,15 +90,7 @@ public class DummyTimeServiceImpl
 
         int oldValue = minutes;
         minutes = newMinutes;
-
-        minutesChanged (oldValue, minutes) ;
-    }
-
-    private void minutesChanged(int oldValue, int minutes) {
-       for (TimerChangeListener l : listeners) {
-           l.propertyChange(TimerChangeListener.MINUTE_PROP,
-                   oldValue, secondes);
-       }
+        notifyListeners(TimerChangeListener.MINUTE_PROP, oldValue, minutes);
     }
 
     public void setHeures(int newHeures) {
@@ -134,18 +99,18 @@ public class DummyTimeServiceImpl
 
         int oldValue = heures;
         heures = newHeures;
-
-        heuresChanged (oldValue, heures) ;
+        notifyListeners(TimerChangeListener.HEURE_PROP, oldValue, heures);
     }
 
-    private void heuresChanged(int oldValue, int heures) {
-       for (TimerChangeListener l : listeners) {
-           l.propertyChange(TimerChangeListener.HEURE_PROP,
-                   oldValue, secondes);
-       }
+    // ✅ Version corrigée — évite ConcurrentModificationException
+    private void notifyListeners(String prop, Object oldValue, Object newValue) {
+        // on parcourt une copie de la liste
+        for (TimerChangeListener listener : new LinkedList<>(listeners)) {
+            listener.propertyChange(prop, oldValue, newValue);
+        }
     }
 
-
+    // === Getters ===
     @Override
     public int getDixiemeDeSeconde() {
         return dixiemeDeSeconde;
