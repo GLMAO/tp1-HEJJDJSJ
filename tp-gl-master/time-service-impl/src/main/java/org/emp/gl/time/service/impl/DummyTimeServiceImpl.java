@@ -1,5 +1,6 @@
 package org.emp.gl.time.service.impl;
 
+import java.beans.PropertyChangeEvent;
 import java.time.LocalTime;
 import java.util.LinkedList;
 import java.util.List;
@@ -102,11 +103,10 @@ public class DummyTimeServiceImpl implements TimerService {
         notifyListeners(TimerChangeListener.HEURE_PROP, oldValue, heures);
     }
 
-    // ✅ Version corrigée — évite ConcurrentModificationException
+    // ✅ Nouvelle version compatible avec PropertyChangeListener
     private void notifyListeners(String prop, Object oldValue, Object newValue) {
-        // on parcourt une copie de la liste
         for (TimerChangeListener listener : new LinkedList<>(listeners)) {
-            listener.propertyChange(prop, oldValue, newValue);
+            listener.propertyChange(new PropertyChangeEvent(this, prop, oldValue, newValue));
         }
     }
 
