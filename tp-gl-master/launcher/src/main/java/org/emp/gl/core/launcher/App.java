@@ -2,8 +2,8 @@ package org.emp.gl.core.launcher;
 
 import org.emp.gl.clients.Horloge;
 import org.emp.gl.clients.CompteARebours;
+import org.emp.gl.clients.HorlogeGUI;
 import org.emp.gl.time.service.impl.DummyTimeServiceImpl;
-
 
 import java.util.Random;
 
@@ -17,8 +17,7 @@ public class App {
         // 1️⃣ Créer le service de temps (le "timer")
         DummyTimeServiceImpl timer = new DummyTimeServiceImpl();
 
-
-        // 2️⃣ Créer plusieurs horloges observant le même timer
+        // 2️⃣ Créer plusieurs horloges observant le même timer (console)
         Horloge horloge1 = new Horloge("Num 1", timer);
         Horloge horloge2 = new Horloge("Num 2", timer);
 
@@ -29,8 +28,11 @@ public class App {
             new CompteARebours("CompteARebours " + i, valeurInitiale, timer);
         }
 
-        // 4️⃣ Le timer démarre automatiquement et notifie tout le monde
-        System.out.println("Simulation en cours... (appuyez sur CTRL+C pour arrêter)");
+        // 4️⃣ Créer et afficher l’horloge graphique (GUI)
+        new HorlogeGUI(timer);
+
+        // 5️⃣ Le timer démarre automatiquement et notifie tout le monde
+        System.out.println("Simulation en cours... (CTRL+C pour arrêter)");
     }
 
     // (optionnel) pour nettoyer la console
